@@ -12,15 +12,21 @@ Tasks are stored in JSON format at:
 ~/.claude/tasks/{task-list-id}/tasks.json
 ```
 
-### Default vs Named Task Lists
+### Task List Identification
 
-**Default (Session-specific):**
-- Each Claude Code session creates its own task list
-- Stored in a session-specific directory under `~/.claude/tasks/`
+The task list ID is determined in the following order of precedence:
+1. `CLAUDE_CODE_TASK_LIST_ID` environment variable.
+2. The current project name (derived from `package.json` or `.git` parent directory).
+3. The current directory name.
+4. "default" (fallback).
 
-**Named (Shared):**
-- Set via `CLAUDE_CODE_TASK_LIST_ID` environment variable
-- Example: `CLAUDE_CODE_TASK_LIST_ID=my-project claude`
+**Shared Tasks (Project-based):**
+- By default, tasks are shared across sessions for the same project.
+- Stored in `~/.claude/tasks/{project-name}/tasks.json`.
+
+**Custom Named Tasks:**
+- Set via `CLAUDE_CODE_TASK_LIST_ID` environment variable to override the project name.
+- Example: `CLAUDE_CODE_TASK_LIST_ID=shared-session claude`.
 - Enables cross-session task sharing
 - Allows external application access
 

@@ -9,6 +9,21 @@ const DEFAULT_TASK_LIST_ID = 'default';
 const ENV_TASK_LIST_ID = 'CLAUDE_CODE_TASK_LIST_ID';
 const CLAUDE_BASE_DIR = path.join(os.homedir(), '.claude', 'tasks');
 
+function getProjectName(): string | undefined {
+  let currentDir = process.cwd();
+  while (true) {
+    if (fs.existsSync(path.join(currentDir, 'package.json')) || fs.existsSync(path.join(currentDir, '.git'))) {
+      return path.basename(currentDir);
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      break;
+    }
+    currentDir = parentDir;
+  }
+  return undefined;
+}
+
 export class TaskStore {
   private taskListId: string;
   private basePath: string;
@@ -16,7 +31,7 @@ export class TaskStore {
   private backupFile: string;
 
   constructor(taskListId?: string) {
-    this.taskListId = taskListId || process.env[ENV_TASK_LIST_ID] || DEFAULT_TASK_LIST_ID;
+    this.taskListId = taskListId || process.env[ENV_TASK_LIST_ID] || getProjectName() || path.basename(process.cwd()) || DEFAULT_TASK_LIST_ID;
     this.basePath = path.join(CLAUDE_BASE_DIR, this.taskListId);
     this.tasksFile = path.join(this.basePath, 'tasks.json');
     this.backupFile = path.join(this.basePath, 'tasks.json.bak');

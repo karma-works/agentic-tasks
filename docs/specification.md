@@ -4,7 +4,7 @@ Technical Specification: Claude Code Task System (v2.1)
 As of version 2.1, Claude Code has transitioned from a simple checklist to a structured Task Event Bus. This allows external applications (IDEs, dashboards, CI runners) to monitor, validate, and synchronize task states via JSON payloads.
 2. File Format & Schema
 
-The task list is persisted as a JSON array. If you enable Shared Tasks (via the environment variable CLAUDE_CODE_TASK_LIST_ID), the state is stored at: ~/.claude/tasks/{project_id}/tasks.json
+The task list is persisted as a JSON array. By default, the state is stored at: `~/.claude/tasks/{project_name}/tasks.json` (where `{project_name}` is derived from your project directory). You can override this ID via the environment variable `CLAUDE_CODE_TASK_LIST_ID`.
 JSON Schema Example
 JSON
 
@@ -61,7 +61,7 @@ Technical Function:
 
 5. Advanced Environment Variables
 Variable	Effect
-CLAUDE_CODE_TASK_LIST_ID	Sets a persistent ID so multiple CLI sessions share the same JSON task file.
+CLAUDE_CODE_TASK_LIST_ID	Overrides the default project-based ID. Sets a persistent ID so multiple CLI sessions share the same JSON task file.
 CLAUDE_CODE_OUTPUT_FORMAT=json	Forces the entire CLI output to be a stream of JSON objects (useful for headless automation).
 Implementation Tip
 

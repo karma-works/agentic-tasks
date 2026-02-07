@@ -1,5 +1,5 @@
-import { TaskManager } from '../../src/task-manager';
-import { TaskStatus } from '../../src/schema';
+import { TaskManager } from '../src/task-manager';
+import { TaskStatus } from '../src/schema';
 
 // Define the tool interface expected by OpenCode (conceptual)
 // In OpenCode, plugins export a 'tools' object or function.

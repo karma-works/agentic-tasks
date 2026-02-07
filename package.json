@@ -2,7 +2,7 @@
   "name": "tasks-ai",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/tasks_ai.js",
   "directories": {
     "doc": "docs"
   },

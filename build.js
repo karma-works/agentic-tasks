@@ -2,7 +2,7 @@ const esbuild = require('esbuild');
 
 Promise.all([
   esbuild.build({
-    entryPoints: ['.opencode/plugin/tasks_ai.ts'],
+    entryPoints: ['plugin/tasks_ai.ts'],
     bundle: true,
     platform: 'node',
     target: 'node18',
