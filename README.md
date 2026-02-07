@@ -9,9 +9,9 @@
     -   **Strict Validation**: Uses [Zod](https://zod.dev/) to enforce schema compliance.
     -   **Auto-Recovery**: Automatically creates backups (`tasks.json.bak`) and restores from them if corruption is detected.
     -   **Concurrency**: Uses file locking to prevent race conditions between agents or processes.
--   **OpenCode Plugin**:
-    -   Exposes a `manage_tasks` tool for agents.
-    -   **Auto-Hook**: Monitors file edits (`write`, `edit`) and proactively reminds the agent of active (`in_progress`) tasks.
+-   **Dual Mode**:
+    1.  **Plugin Mode** (Recommended): Exposes a `manage_tasks` tool and auto-monitors file edits.
+    2.  **Skill Mode** (Standalone): Allows manual task management via bundled CLI scripts without installing the plugin.
 
 ## Prerequisites
 
@@ -31,16 +31,16 @@
     npm install
     ```
 
-3.  **Build the plugin**:
-    This compiles the TypeScript source into a single bundled JavaScript file.
+3.  **Build the project**:
+    This compiles the TypeScript source into bundled JavaScript files (`dist/tasks_ai.js`, `dist/cli.js`, and `skills/tasks-ai/scripts/cli.js`).
     ```bash
     npm run build
+    cp dist/cli.js skills/tasks-ai/scripts/cli.js
     ```
-    The output will be at `dist/tasks_ai.js`.
 
-## Installing the OpenCode Plugin
+## Usage Option 1: Full Plugin Installation (Recommended)
 
-To use this with OpenCode:
+To get the best experience with automatic reminders and integrated tools:
 
 1.  Ensure your OpenCode plugin directory exists:
     ```bash
@@ -54,35 +54,46 @@ To use this with OpenCode:
 
 3.  **Restart OpenCode**. The plugin will load automatically.
 
-## Usage
+The agent will have access to the `manage_tasks` tool and will receive automatic reminders when editing files for active tasks.
 
-### Using the Plugin (in OpenCode)
+## Usage Option 2: Skill-Only Installation (Limited Functionality)
 
-Once installed, the agent will have access to the `manage_tasks` tool.
+If you cannot or do not wish to install the plugin, you can use the skill in standalone mode. This provides manual task management via CLI scripts but lacks automatic reminders.
 
--   **Add a task**: "Add a task to refactor the login page."
--   **List tasks**: "What tasks are pending?"
--   **Complete a task**: "Mark the login refactor task as complete."
+1.  Copy the entire `skills/tasks-ai` directory to your OpenCode skills folder:
+    ```bash
+    mkdir -p ~/.opencode/skills
+    cp -r skills/tasks-ai ~/.opencode/skills/
+    ```
 
-**Automatic Reminders**: If you (or the agent) edit a file while a task is marked `in_progress`, the plugin will inject a subtle reminder into the context, ensuring the agent stays focused on the active task.
+2.  When interacting with the agent, ask it to "use the tasks-ai skill". The agent will read the instructions in `SKILL.md` and use the bundled `scripts/tasks.sh` to manage tasks.
 
-### Using the CLI (Manual Management)
+### Manual CLI Usage
 
-You can manage tasks directly from the command line without starting OpenCode.
+You can manage tasks directly from the command line using the provided wrapper scripts in `bin/`. These do **not** require the OpenCode plugin to be running.
 
+**Bash (Linux/macOS)**:
 ```bash
-# List all tasks
-npx ts-node src/cli.ts list
-
-# Add a new task (Description, Priority, Tags, Dependencies)
-npx ts-node src/cli.ts add "Fix critical bug" high "bug,urgent"
-
-# Complete a task
-npx ts-node src/cli.ts complete <TASK_UUID>
-
-# Remove a task
-npx ts-node src/cli.ts remove <TASK_UUID>
+./bin/tasks.sh list
+./bin/tasks.sh add "Fix critical bug" high "bug,urgent"
+./bin/tasks.sh complete <TASK_UUID>
 ```
+
+**PowerShell (Windows)**:
+```powershell
+./bin/tasks.ps1 list
+./bin/tasks.ps1 add "Fix critical bug" high "bug,urgent"
+```
+
+### Supported Commands
+
+-   `list [status]`: List all tasks (optionally filter by status: pending, in_progress, completed, blocked).
+-   `add <description> [priority] [tags] [deps]`: Create a new task.
+    -   Priority: low, medium, high.
+    -   Tags: comma-separated string.
+    -   Deps: comma-separated string of Task IDs.
+-   `complete <id>`: Mark a task as completed (unblocks dependent tasks).
+-   `remove <id>`: Remove a task (fails if other tasks depend on it).
 
 ## Architecture
 
@@ -90,6 +101,7 @@ npx ts-node src/cli.ts remove <TASK_UUID>
 -   **`src/store.ts`**: Handles file I/O, locking, and the backup/restore logic.
 -   **`src/task-manager.ts`**: Core business logic (dependency validation, status updates).
 -   **`.opencode/plugin/tasks_ai.ts`**: The OpenCode plugin definition.
+-   **`skills/tasks-ai/`**: The standalone skill package containing bundled CLI scripts.
 
 ## License
 

@@ -27,7 +27,7 @@ Tasks are stored in `~/.claude/tasks/{id}/tasks.json`.
 - **Auto-Recovery**: Automatically backups and restores `tasks.json` if corruption is detected.
 - **Dependency Management**: Prevents starting tasks if dependencies are not met.
 - **Strict Validation**: Ensures strict adherence to the Claude Code task schema.
-- **Auto-Hook**: Monitors file edits and reminds the agent of active tasks.
+- **Auto-Hook**: Monitors file edits and reminds the agent of active tasks (Requires Plugin).
 
 ## Installation
 
@@ -39,3 +39,18 @@ To use this skill's plugin in OpenCode:
     ```
 2.  Restart OpenCode.
 3.  The tool `manage_tasks` will be available, and the agent will receive automatic updates when editing files.
+
+## Standalone Usage (Without Plugin)
+
+If the `manage_tasks` tool is not available (e.g., you are using the skill without installing the plugin), you can manage tasks manually using the bundled CLI script.
+
+**Important**: This method does **not** provide automatic reminders or file monitoring. You must manually invoke the script to update task status.
+
+### Usage
+Run the script `scripts/tasks.sh` using the `bash` tool.
+
+**Examples:**
+-   **List Tasks**: `./scripts/tasks.sh list`
+-   **Add Task**: `./scripts/tasks.sh add "Implement feature X" high "feature,important"`
+-   **Complete Task**: `./scripts/tasks.sh complete <TASK_UUID>`
+-   **Remove Task**: `./scripts/tasks.sh remove <TASK_UUID>`

@@ -1,28 +1,33 @@
-# Project Plan: tasks-ai Documentation
+# Plan: Enhance tasks-ai for Standalone Skill Usage
 
 ## Objective
-Create a comprehensive `README.md` to guide users on how to install, build, and use the `tasks-ai` project.
+Enable the `tasks-ai` skill to function independently of the OpenCode plugin, providing "limited functionality" (manual task management via CLI) directly through the skill definition. Update documentation accordingly.
 
-## Planned Changes
+## Limitations of Standalone Mode
+-   **No Auto-Hook**: The agent will not receive automatic reminders when editing files.
+-   **Manual Invocation**: The agent must explicitly run bash commands (e.g., `tasks.sh list`) instead of using a high-level `manage_tasks` tool.
 
-1.  **Update `package.json`**:
-    -   Add `"build": "node build.js"` to the `scripts` section for easier building.
+## Implementation Steps
 
-2.  **Create `README.md`**:
-    -   **Introduction**: Explain that this is a bridge between Claude Code's task system and OpenCode.
-    -   **Prerequisites**: Node.js & npm.
-    -   **Setup & Build**:
-        -   Steps to install dependencies (`npm install`).
-        -   Steps to build the project (`npm run build`).
-    -   **Installation**:
-        -   **OpenCode Plugin**: Instructions to copy the built artifact (`dist/tasks_ai.js`) to `~/.config/opencode/plugin/tasks_ai.js`.
-    -   **Usage**:
-        -   **CLI**: Examples of using `npx ts-node src/cli.ts` for managing tasks manually.
-        -   **Plugin**: Explanation of the `manage_tasks` tool and the automatic hook that monitors file edits.
-    -   **Architecture**: Brief note on the safety features (Zod validation, atomic backups, file locking).
+### 1. Bundle CLI with Skill
+To make the skill self-contained:
+-   Copy the built CLI artifact `dist/cli.js` to `skills/tasks-ai/scripts/cli.js`.
+-   Create a wrapper script `skills/tasks-ai/scripts/tasks.sh` that executes `node scripts/cli.js`.
+    -   *Why?* Simplifies the command for the agent (`./scripts/tasks.sh list` vs `node path/to/cli.js list`).
+
+### 2. Update `SKILL.md`
+-   Add a **"Standalone Usage"** section.
+-   Instruct the agent: "If the `manage_tasks` tool is not available, use the provided script `scripts/tasks.sh` via the `bash` tool."
+-   List the CLI commands (`add`, `list`, `complete`, `remove`) with examples.
+
+### 3. Update `README.md`
+-   Add a **"Skill-Only Installation"** section.
+    -   Instructions to install the skill directory to `~/.opencode/skills/tasks-ai`.
+    -   Explain that this mode provides manual task management without the background monitoring plugin.
 
 ## Verification
--   After creating the README, I will not execute commands since I am documenting usage, but I will ensure the instructions match the actual file paths and script names.
+-   Verify that `skills/tasks-ai/scripts/tasks.sh` correctly invokes `cli.js` relative to itself.
+-   Review `README.md` for clarity on the two installation methods (Full Plugin vs. Skill Only).
 
 ## Next Step
-Execute the plan: Update `package.json` and create `README.md`.
+Execute the bundling and documentation updates.
