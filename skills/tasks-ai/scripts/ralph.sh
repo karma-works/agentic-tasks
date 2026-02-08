@@ -105,7 +105,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     if [ "$DRY_RUN" = true ]; then
         echo "DRY RUN: Would execute command:"
         if [[ "$AGENT" == *"opencode"* ]]; then
-             echo "$AGENT ${ARGS[@]} -p \"$PROMPT\""
+             echo "$AGENT ${ARGS[@]} run \"$PROMPT\""
         elif [[ "$AGENT" == *"claude"* ]]; then
              echo "echo -e \"$PROMPT\" | $AGENT ${ARGS[@]}"
         else
@@ -119,7 +119,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     
     # Execute agent with prompt
     if [[ "$AGENT" == *"opencode"* ]]; then
-         "$AGENT" "${ARGS[@]}" -p "$PROMPT"
+         "$AGENT" "${ARGS[@]}" run "$PROMPT"
     elif [[ "$AGENT" == *"claude"* ]]; then
          echo -e "$PROMPT" | "$AGENT" "${ARGS[@]}"
     else
