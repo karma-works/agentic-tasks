@@ -36,6 +36,7 @@ cp "$SKILL_SOURCE_DIR/SKILL.md" "$SKILL_DEST_DIR/" 2>/dev/null || true
 # Copy plugin file
 echo "Updating plugin in $PLUGIN_DEST_DIR..."
 cp "$SOURCE_FILE" "$PLUGIN_DEST_DIR/tasks_ai.ts"
-cp "$PROJECT_ROOT/src/manager.ts" "$PLUGIN_DEST_DIR/manager.ts"
+# Remove manager.ts from plugin dir if it exists to avoid loading errors
+rm -f "$PLUGIN_DEST_DIR/manager.ts"
 
 echo "Installation successful!"
