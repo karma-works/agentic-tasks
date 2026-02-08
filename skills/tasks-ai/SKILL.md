@@ -43,8 +43,14 @@ When the user asks to "setup ralph loop" or similar:
 ### Usage
 Run the loop:
 ```bash
-./scripts/ralph.sh [--model MODEL_NAME] [--max-iterations N] [--dry-run]
+./scripts/ralph.sh --model google/antigravity-gemini-3-flash
 ```
+
+#### Ralph Configuration
+- **Custom Model**: `--model MODEL_NAME`
+- **Custom Agent**: Set `TASKS_AI_AGENT` env var or use `--agent AGENT_NAME` (defaults to `opencode`).
+- **Iteration Limit**: `--max-iterations N` (default: 10)
+- **Dry Run**: `--dry-run` to see commands without executing.
 
 ## Tools & Commands
 

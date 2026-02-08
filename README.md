@@ -131,7 +131,29 @@ For autonomous execution (Mode 3), you can set up the Ralph loop in any project:
 
 3.  Run the loop:
     ```bash
-    ./scripts/ralph.sh --model <model_name>
+    ./scripts/ralph.sh --model google/antigravity-gemini-3-flash
+    ```
+
+#### Ralph Configuration
+
+-   **Custom Model**: Specify which model the agent should use:
+    ```bash
+    ./scripts/ralph.sh --model google/antigravity-gemini-3-flash
+    ```
+-   **Custom Agent**: Change the underlying AI agent command (defaults to `opencode`). This can be set via environment variable or CLI flag:
+    ```bash
+    export TASKS_AI_AGENT="custom-agent"
+    ./scripts/ralph.sh
+    # OR
+    ./scripts/ralph.sh --agent custom-agent
+    ```
+-   **Max Iterations**: Limit the number of tasks processed in a single loop (default: 10):
+    ```bash
+    ./scripts/ralph.sh --max-iterations 5
+    ```
+-   **Dry Run**: See what commands would be executed without actually running the agent:
+    ```bash
+    ./scripts/ralph.sh --dry-run
     ```
 
 ### Manual CLI Usage
