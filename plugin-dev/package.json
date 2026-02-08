@@ -1,0 +1,46 @@
+{
+  "name": "opencode-plugin-tasks-ai",
+  "version": "0.1.0",
+  "description": "OpenCode plugin for managing tasks within the editor",
+  "type": "module",
+  "main": "src/index.ts",
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "bun tsc --noEmit",
+    "lint": "bunx biome check .",
+    "lint:fix": "bunx biome check --write .",
+    "format": "bunx biome format --write ."
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "tasks",
+    "ai-agents"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.1.25",
+    "zod": "^3.24.1",
+    "uuid": "^11.0.5",
+    "fs-extra": "^11.3.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
+    "@types/fs-extra": "^11.0.4",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "opencode": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "opencode": {
+      "optional": true
+    }
+  }
+}

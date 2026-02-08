@@ -59,21 +59,51 @@
 
 ## Usage Option 1: Full Plugin Installation (Recommended)
 
-To get the best experience with automatic reminders and integrated tools:
+### 1. Installing NPM Plugins (Easiest)
 
-1.  Ensure your OpenCode plugin directory exists:
-    ```bash
-    mkdir -p ~/.config/opencode/plugin
+If the plugin is hosted on npm (e.g., `tasks-ai`), follow these steps:
+
+1.  Open your configuration file:
+    -   **Project-level**: `opencode.json` (in your project root).
+    -   **Global**: `~/.config/opencode/opencode.json`.
+
+2.  Add the plugin name to the "plugins" array:
+    ```json
+    {
+      "plugins": [
+        "tasks-ai"
+      ]
+    }
     ```
 
-2.  Copy the built plugin:
+3.  **Restart OpenCode**: At startup, OpenCode uses Bun to automatically install and cache these plugins.
+
+### 2. Installing Local or Custom Plugins
+
+If you are building from source or have a local `.ts` or `.js` file, you can place it in specific directories where OpenCode scans for them.
+
+#### Directory Locations
+
+OpenCode looks for files in these folders:
+-   **Project-specific**: `.opencode/plugins/`
+-   **Global**: `~/.config/opencode/plugins/`
+
+#### Steps to Install
+
+Copy the built plugin file into that folder:
     ```bash
-    cp dist/tasks_ai.js ~/.config/opencode/plugin/tasks_ai.js
+    # From the tasks-ai repository root
+    cp dist/tasks_ai.js .opencode/plugins/tasks_ai.js
     ```
 
-3.  **Restart OpenCode**. The plugin will load automatically.
+### 3. Verifying Installation
 
-The agent will have access to the `manage_tasks` tool and will receive automatic reminders when editing files for active tasks.
+Once you launch OpenCode, you can verify if your plugins loaded correctly by looking at the startup logs or checking the terminal UI. Many plugins will print a "Plugin loaded!" message to the console.
+
+> [!TIP]
+> **Load Order**: OpenCode loads plugins in a specific order:
+> 1. Global Config → 2. Project Config → 3. Global Plugins Dir → 4. Project Plugins Dir.
+> Later plugins can override or hook into the behavior of earlier ones.
 
 ## Usage Option 2: Skill-Only Installation (Limited Functionality)
 
