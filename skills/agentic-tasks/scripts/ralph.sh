@@ -44,9 +44,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Check if agent exists
-if ! command -v "$AGENT" &> /dev/null; then
-    echo "Error: Agent '$AGENT' not found. Please install it or set AGENTIC_TASKS_AGENT environment variable."
+# Check if agent exists (extract first word for command check)
+AGENT_CMD=$(echo "$AGENT" | awk '{print $1}')
+if ! command -v "$AGENT_CMD" &> /dev/null; then
+    echo "Error: Agent '$AGENT_CMD' not found. Please install it or set AGENTIC_TASKS_AGENT environment variable."
     exit 1
 fi
 
@@ -118,12 +119,17 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     echo "Running agent on task..."
     
     # Execute agent with prompt
+    # Parse agent command and its arguments
+    AGENT_ARGS=($AGENT)
+    AGENT_BIN="${AGENT_ARGS[0]}"
+    AGENT_EXTRA_ARGS=("${AGENT_ARGS[@]:1}")
+    
     if [[ "$AGENT" == *"opencode"* ]]; then
-         "$AGENT" "${ARGS[@]}" run "$PROMPT"
+         "$AGENT_BIN" "${AGENT_EXTRA_ARGS[@]}" "${ARGS[@]}" run "$PROMPT"
     elif [[ "$AGENT" == *"claude"* ]]; then
-         echo -e "$PROMPT" | "$AGENT" "${ARGS[@]}"
+         echo -e "$PROMPT" | "$AGENT_BIN" "${AGENT_EXTRA_ARGS[@]}" "${ARGS[@]}"
     else
-         "$AGENT" "${ARGS[@]}" "$PROMPT"
+         "$AGENT_BIN" "${AGENT_EXTRA_ARGS[@]}" "${ARGS[@]}" "$PROMPT"
     fi
     
     # Verify completion
