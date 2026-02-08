@@ -79,3 +79,75 @@ Define a list of tasks, then run the Ralph script to have an agent execute them 
 ## License
 
 MIT
+
+---
+
+## Configuration
+
+### Setting up the Ralph Loop
+
+For autonomous execution (Mode 3), you can set up the Ralph loop in any project:
+
+1. Run the setup script provided by the skill:
+   ```bash
+   # From your project root
+   ./skills/agentic-tasks/scripts/setup_ralph.sh .
+   ```
+
+2. This creates `scripts/ralph.sh` and `scripts/tasks/` in your project.
+
+3. Run the loop:
+   ```bash
+   ./scripts/ralph.sh --model google/antigravity-gemini-3-flash
+   ```
+
+#### Ralph Configuration
+
+- **Custom Model**: Specify which model the agent should use:
+  ```bash
+  ./scripts/ralph.sh --model google/antigravity-gemini-3-flash
+  ```
+- **Custom Agent**: Change the underlying AI agent command (defaults to `opencode`). This can be set via environment variable or CLI flag:
+  ```bash
+  export AGENTIC_TASKS_AGENT="custom-agent"
+  ./scripts/ralph.sh
+  # OR
+  ./scripts/ralph.sh --agent custom-agent
+  ```
+- **Max Iterations**: Limit the number of tasks processed in a single loop (default: 10):
+  ```bash
+  ./scripts/ralph.sh --max-iterations 5
+  ```
+- **Dry Run**: See what commands would be executed without actually running the agent:
+  ```bash
+  ./scripts/ralph.sh --dry-run
+  ```
+
+### Manual CLI Usage
+
+You can manage tasks directly from the command line using the provided wrapper scripts in `bin/`. These do **not** require the OpenCode plugin to be running.
+
+**Bash (Linux/macOS)**:
+```bash
+./bin/tasks.sh list
+./bin/tasks.sh add "Fix critical bug" high "bug,urgent"
+./bin/tasks.sh complete <TASK_UUID>
+```
+
+**PowerShell (Windows)**:
+```powershell
+./bin/tasks.ps1 list
+./bin/tasks.ps1 add "Fix critical bug" high "bug,urgent"
+```
+
+### Supported Commands
+
+- `list [status]`: List all tasks (optionally filter by status: pending, in_progress, completed, blocked).
+- `add <description> [priority] [tags] [deps]`: Create a new task.
+  - Priority: low, medium, high.
+  - Tags: comma-separated string.
+  - Deps: comma-separated string of Task IDs.
+- `start <id>`: Mark a task as in progress.
+- `complete <id>`: Mark a task as completed (unblocks dependent tasks).
+- `update <id> [description] [status] [priority]`: Update task fields.
+- `remove <id>`: Remove a task (fails if other tasks depend on it).
