@@ -110,6 +110,16 @@ For autonomous execution (Mode 3), you can set up the Ralph loop in any project:
   # OR
   ./scripts/ralph.sh --agent custom-agent
   ```
+
+  Recommendation: Use agentic-tasks together with [Yolobox](https://github.com/finbarr/yolobox), so the agent savely without the need to ask for permissions:
+
+  ```bash
+  brew install finbarr/tap/yolobox
+
+  # SET Custom Agentic Tasks Agent, for example
+  export AGENTIC_TASKS_AGENT="yolobox opencode --copy-agent-instructions --env GOOGLE_GENERATIVE_AI_API_KEY=<YOUR_API_KEY> --mount ~/.config/opencode/plugins:/home/yolo/.config/opencode/plugins:ro --mount ~/.config/opencode/skills:/home/yolo/.config/opencode/skills:ro --mount ~/.claude/tasks:/home/yolo/.claude/tasks --mount ~/.config/opencode/tasks:/home/yolo/.config/opencode/tasks"
+  ```
+
 - **Max Iterations**: Limit the number of tasks processed in a single loop (default: 10):
   ```bash
   ./scripts/ralph.sh --max-iterations 5
