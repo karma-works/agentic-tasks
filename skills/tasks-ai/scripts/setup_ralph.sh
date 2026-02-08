@@ -20,19 +20,20 @@ TASKS_DIR="$PROJECT_ROOT/scripts/tasks"
 mkdir -p "$TASKS_DIR"
 
 echo "Copying task management scripts to '$TASKS_DIR'..."
-# We use the CLI.js from the skill directory.
-if [ -f "$SKILL_SCRIPT_DIR/cli.js" ]; then
-    cp "$SKILL_SCRIPT_DIR/cli.js" "$TASKS_DIR/"
-else
-    echo "Error: cli.js not found in '$SKILL_SCRIPT_DIR'."
-    exit 1
+# We use the TS files from the plugin directory if available, otherwise from skill
+if [ -f "$SKILL_SCRIPT_DIR/../../../plugin/cli.ts" ]; then
+    cp "$SKILL_SCRIPT_DIR/../../../plugin/cli.ts" "$TASKS_DIR/"
+    cp "$SKILL_SCRIPT_DIR/../../../plugin/tasks_ai.ts" "$TASKS_DIR/"
+elif [ -f "$SKILL_SCRIPT_DIR/cli.ts" ]; then
+    cp "$SKILL_SCRIPT_DIR/cli.ts" "$TASKS_DIR/"
+    cp "$SKILL_SCRIPT_DIR/tasks_ai.ts" "$TASKS_DIR/"
 fi
 
-# Create a local tasks.sh that points to the local cli.js
+# Create a local tasks.sh that points to the local cli.ts
 cat > "$TASKS_DIR/tasks.sh" << 'EOF'
 #!/usr/bin/env bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-node "$DIR/cli.js" "$@"
+npx ts-node "$DIR/cli.ts" "$@"
 EOF
 chmod +x "$TASKS_DIR/tasks.sh"
 

@@ -1,114 +1,280 @@
-import { TaskManager } from '../src/task-manager';
-import { TaskStatus } from '../src/schema';
+import type { Plugin } from "@opencode-ai/plugin";
+import { tool } from "@opencode-ai/plugin";
+import * as fs from 'fs-extra';
+import * as path from 'node:path';
+import * as os from 'node:os';
+import { z } from 'zod';
+import { v4 as uuidv4 } from 'uuid';
 
-// Define the tool interface expected by OpenCode (conceptual)
-// In OpenCode, plugins export a 'tools' object or function.
-// This is a simplified representation fitting the request.
+// --- Configuration ---
+const PLUGIN_NAME = 'tasks-ai';
+const TASK_LIST_ID = process.env.OPENCODE_TASK_LIST_ID || 'default';
+const BASE_DIR = path.join(os.homedir(), '.config', 'opencode', 'tasks', TASK_LIST_ID);
+const TASKS_FILE = path.join(BASE_DIR, 'tasks.json');
+const BACKUP_FILE = path.join(BASE_DIR, 'tasks.json.bak');
 
-export default {
-  name: 'tasks-ai',
-  setup: async (context: any) => {
-    const manager = new TaskManager();
+// --- Schemas ---
+const TaskStatusSchema = z.enum(['pending', 'in_progress', 'completed', 'blocked', 'cancelled']);
+const PrioritySchema = z.enum(['low', 'medium', 'high']);
 
-    context.registerTool({
-      name: 'manage_tasks',
-      description: 'Manage the task list for the current project. Use this to track progress, add new tasks, or mark tasks as complete.',
-      parameters: {
-        type: 'object',
-        properties: {
-          command: {
-            type: 'string',
-            enum: ['list', 'add', 'complete', 'update', 'remove'],
-            description: 'The operation to perform'
-          },
-          description: {
-            type: 'string',
-            description: 'Description for new tasks'
-          },
-          taskId: {
-            type: 'string',
-            description: 'ID of the task to update/remove/complete'
-          },
-          status: {
-            type: 'string',
-            enum: ['pending', 'in_progress', 'completed', 'blocked', 'cancelled'],
-            description: 'New status for update'
-          },
-          priority: {
-            type: 'string',
-            enum: ['low', 'medium', 'high'],
-            description: 'Priority for new tasks'
-          },
-          dependencies: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'List of dependency Task IDs'
-          }
-        },
-        required: ['command']
-      },
-      execute: async (args: any) => {
-        try {
-          switch (args.command) {
-            case 'list':
-              const tasks = await manager.listTasks(args.status as TaskStatus);
-              return JSON.stringify(tasks, null, 2);
+const TaskSchema = z.object({
+  id: z.string().uuid(),
+  description: z.string(),
+  status: TaskStatusSchema,
+  created_at: z.string(),
+  updated_at: z.string(),
+  priority: PrioritySchema.default('medium'),
+  tags: z.array(z.string()).default([]),
+  dependencies: z.array(z.string()).default([]),
+});
 
-            case 'add':
-              if (!args.description) throw new Error('Description is required for add');
-              const id = await manager.addTask(
-                args.description,
-                args.priority || 'medium',
-                [], // tags not exposed in simple tool yet
-                args.dependencies || []
-              );
-              return `Task created with ID: ${id}`;
+const TaskListSchema = z.object({
+  tasks: z.array(TaskSchema),
+  last_updated: z.string(),
+  version: z.number(),
+});
 
-            case 'complete':
-              if (!args.taskId) throw new Error('taskId is required for complete');
-              await manager.updateTask(args.taskId, { status: 'completed' });
-              return `Task ${args.taskId} marked as completed.`;
+type Task = z.infer<typeof TaskSchema>;
+type TaskList = z.infer<typeof TaskListSchema>;
+type TaskStatus = z.infer<typeof TaskStatusSchema>;
 
-            case 'update':
-              if (!args.taskId) throw new Error('taskId is required for update');
-              await manager.updateTask(args.taskId, {
-                status: args.status,
-                description: args.description,
-                dependencies: args.dependencies
-              });
-              return `Task ${args.taskId} updated.`;
-
-            case 'remove':
-               if (!args.taskId) throw new Error('taskId is required for remove');
-               await manager.removeTask(args.taskId);
-               return `Task ${args.taskId} removed.`;
-
-            default:
-              return `Unknown command: ${args.command}`;
-          }
-        } catch (error: any) {
-          return `Error: ${error.message}`;
-        }
-      }
-    });
-
-    // Auto-Hook: Monitor file changes
-    context.registerHook('tool.execute.after', async (event: any) => {
-      if (event.tool === 'write' || event.tool === 'edit') {
-        try {
-          const activeTasks = await manager.listTasks('in_progress');
-          if (activeTasks.length > 0) {
-             const taskSummary = activeTasks.map(t => `- ${t.description} (ID: ${t.id})`).join('\n');
-             // Return a system notice to the agent
-             return {
-               message: `[Tasks AI] Work detected. Current active tasks:\n${taskSummary}\nRemember to mark tasks as complete using 'manage_tasks' when done.`
-             };
-          }
-        } catch (e) {
-          // Silent fail on hook to not disrupt flow
-          console.error("Task hook error:", e);
-        }
-      }
-    });
+// --- Store Logic ---
+class TaskStore {
+  constructor() {
+    fs.ensureDirSync(BASE_DIR);
   }
+
+  private getTimestamp(): string {
+    return new Date().toISOString();
+  }
+
+  readTasks(): TaskList {
+    if (!fs.existsSync(TASKS_FILE)) {
+      return { tasks: [], version: 1, last_updated: this.getTimestamp() };
+    }
+    try {
+      const content = fs.readFileSync(TASKS_FILE, 'utf-8');
+      if (!content.trim()) return { tasks: [], version: 1, last_updated: this.getTimestamp() };
+      
+      const json = JSON.parse(content);
+      const parsed = TaskListSchema.safeParse(json);
+      if (parsed.success) return parsed.data;
+      
+      console.error(`[${PLUGIN_NAME}] Invalid task file. Attempting backup recovery.`);
+      return this.recoverFromBackup();
+    } catch (error) {
+      console.error(`[${PLUGIN_NAME}] Read error:`, error);
+      return this.recoverFromBackup();
+    }
+  }
+
+  private recoverFromBackup(): TaskList {
+    if (fs.existsSync(BACKUP_FILE)) {
+      try {
+        const content = fs.readFileSync(BACKUP_FILE, 'utf-8');
+        const json = JSON.parse(content);
+        if (TaskListSchema.safeParse(json).success) {
+          fs.copyFileSync(BACKUP_FILE, TASKS_FILE);
+          console.log(`[${PLUGIN_NAME}] Recovered from backup.`);
+          return json;
+        }
+      } catch (e) { /* ignore */ }
+    }
+    return { tasks: [], version: 1, last_updated: this.getTimestamp() };
+  }
+
+  saveTasks(data: TaskList): void {
+    data.last_updated = this.getTimestamp();
+    
+    // Backup existing
+    if (fs.existsSync(TASKS_FILE)) {
+      try {
+        fs.copyFileSync(TASKS_FILE, BACKUP_FILE);
+      } catch (e) {
+        // Ignore backup failure
+      }
+    }
+    
+    fs.writeJsonSync(TASKS_FILE, data, { spaces: 2 });
+  }
+}
+
+// --- Manager Logic ---
+class TaskManager {
+  private store = new TaskStore();
+
+  list(status?: TaskStatus): Task[] {
+    const data = this.store.readTasks();
+    return status ? data.tasks.filter(t => t.status === status) : data.tasks;
+  }
+
+  add(description: string, priority: 'low'|'medium'|'high' = 'medium', tags: string[] = [], deps: string[] = []): string {
+    const data = this.store.readTasks();
+    const newTask: Task = {
+      id: uuidv4(),
+      description,
+      status: deps.length > 0 ? 'blocked' : 'pending',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      priority,
+      tags,
+      dependencies: deps,
+    };
+    data.tasks.push(newTask);
+    this.store.saveTasks(data);
+    return newTask.id;
+  }
+
+  update(id: string, updates: Partial<Task>): Task | null {
+    const data = this.store.readTasks();
+    const taskIndex = data.tasks.findIndex(t => t.id === id);
+    if (taskIndex === -1) return null;
+
+    const task = data.tasks[taskIndex];
+    if (!task) return null;
+    
+    const updatedTask: Task = {
+      ...task,
+      ...updates,
+      updated_at: new Date().toISOString(),
+      id: task.id,
+      created_at: task.created_at,
+      description: updates.description ?? task.description,
+      status: updates.status ?? task.status,
+      priority: updates.priority ?? task.priority,
+      tags: updates.tags ?? task.tags,
+      dependencies: updates.dependencies ?? task.dependencies
+    };
+    
+    // Validate status transition
+    if (updates.status === 'completed' || updates.status === 'in_progress') {
+       const incompleteDeps = data.tasks.filter(t => updatedTask.dependencies.includes(t.id) && t.status !== 'completed');
+       if (incompleteDeps.length > 0) {
+         throw new Error(`Cannot start/complete task. Dependencies not met: ${incompleteDeps.map(t => t.id).join(', ')}`);
+       }
+    }
+
+    data.tasks[taskIndex] = updatedTask;
+    
+    // Unblock dependents
+    if (updatedTask.status === 'completed') {
+      for (const t of data.tasks) {
+        if (t.dependencies.includes(id) && t.status === 'blocked') {
+          const stillBlocked = t.dependencies.some(depId => {
+            const dep = data.tasks.find(d => d.id === depId);
+            return dep && dep.status !== 'completed';
+          });
+          if (!stillBlocked) {
+            t.status = 'pending';
+            t.updated_at = new Date().toISOString();
+          }
+        }
+      }
+    }
+
+    this.store.saveTasks(data);
+    return updatedTask;
+  }
+
+  remove(id: string): void {
+    const data = this.store.readTasks();
+    const hasDependents = data.tasks.some(t => t.dependencies.includes(id));
+    if (hasDependents) throw new Error(`Cannot remove task ${id}: other tasks depend on it.`);
+    
+    data.tasks = data.tasks.filter(t => t.id !== id);
+    this.store.saveTasks(data);
+  }
+}
+
+// --- Plugin Definition ---
+export const TasksAiPlugin: Plugin = async () => {
+  const manager = new TaskManager();
+  console.log(`[${PLUGIN_NAME}] Loaded. Managing tasks at: ${TASKS_FILE}`);
+
+  return {
+    tool: {
+      manage_tasks: tool({
+        description: 'Manage a persistent task list. Use this to track work, dependencies, and progress.',
+        args: {
+          command: tool.schema.enum(['list', 'add', 'complete', 'update', 'remove', 'start']).describe('The operation to perform'),
+          description: tool.schema.string().optional().describe('Task description'),
+          taskId: tool.schema.string().optional().describe('Target task ID'),
+          status: tool.schema.enum(['pending', 'in_progress', 'completed', 'blocked', 'cancelled']).optional().describe('Task status'),
+          priority: tool.schema.enum(['low', 'medium', 'high']).optional().describe('Task priority'),
+          tags: tool.schema.string().optional().describe('Comma-separated tags'),
+          dependencies: tool.schema.string().optional().describe('Comma-separated dependency IDs')
+        },
+        execute: async (args) => {
+          try {
+            switch (args.command) {
+              case 'list':
+                return JSON.stringify(manager.list(args.status as TaskStatus), null, 2);
+              
+              case 'add': {
+                if (!args.description) throw new Error('Description required');
+                const tags = args.tags ? args.tags.split(',').map((s: string) => s.trim()) : [];
+                const deps = args.dependencies ? args.dependencies.split(',').map((s: string) => s.trim()) : [];
+                const newId = manager.add(args.description, (args.priority as 'low'|'medium'|'high') ?? 'medium', tags, deps);
+                return `Task created: ${newId}`;
+              }
+
+              case 'complete':
+                if (!args.taskId) throw new Error('taskId required');
+                manager.update(args.taskId, { status: 'completed' });
+                return `Task ${args.taskId} completed.`;
+
+              case 'start':
+                if (!args.taskId) throw new Error('taskId required');
+                manager.update(args.taskId, { status: 'in_progress' });
+                return `Task ${args.taskId} started.`;
+
+              case 'update':
+                if (!args.taskId) throw new Error('taskId required');
+                manager.update(args.taskId, { 
+                  description: args.description, 
+                  status: args.status as TaskStatus,
+                  priority: args.priority as 'low'|'medium'|'high'
+                });
+                return `Task ${args.taskId} updated.`;
+
+              case 'remove':
+                if (!args.taskId) throw new Error('taskId required');
+                manager.remove(args.taskId);
+                return `Task ${args.taskId} removed.`;
+
+              default:
+                return `Unknown command: ${args.command}`;
+            }
+          } catch (e: unknown) {
+            return `Error: ${e instanceof Error ? e.message : String(e)}`;
+          }
+        }
+      })
+    },
+
+    "tool.execute.after": async (input, output) => {
+      // Auto-remind if tasks are in progress
+      if (input.tool === 'write' || input.tool === 'edit') {
+        const active = manager.list('in_progress');
+        if (active.length > 0) {
+          const taskList = active.map(t => `- [${t.priority}] ${t.description} (${t.id})`).join('\n');
+          
+          const hint = `\n\n[System Note]: You have active tasks: \n${taskList}\nDon't forget to 'complete' them if your changes fulfilled the requirements.`;
+          
+          // Defensive check for the output anomaly
+          if (typeof output === 'string') {
+            console.log(`[${PLUGIN_NAME}] Active tasks reminder added to output.`);
+            // Note: If we can't modify output directly (as it might be passed by value or readonly),
+            // we might need to use a different hook or wait for SDK support to modify it.
+            // For now, let's at least log it and try to modify if possible.
+          } else if (output && typeof output === 'object') {
+            const out = output as { content?: string };
+            if (typeof out.content === 'string') {
+               out.content += hint;
+            }
+          }
+        }
+      }
+    }
+  };
 };
