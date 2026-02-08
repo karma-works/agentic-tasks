@@ -118,6 +118,8 @@ For autonomous execution (Mode 3), you can set up the Ralph loop in any project:
 
   # SET Custom Agentic Tasks Agent, for example
   export AGENTIC_TASKS_AGENT="yolobox opencode --copy-agent-instructions --env GOOGLE_GENERATIVE_AI_API_KEY=<YOUR_API_KEY> --mount ~/.config/opencode/plugins:/home/yolo/.config/opencode/plugins:ro --mount ~/.config/opencode/skills:/home/yolo/.config/opencode/skills:ro --mount ~/.claude/tasks:/home/yolo/.claude/tasks --mount ~/.config/opencode/tasks:/home/yolo/.config/opencode/tasks"
+  # more complex example using antigravity oauth 
+  export AGENTIC_TASKS_AGENT="yolobox opencode --copy-agent-instructions --mount ~/.config/opencode/antigravity-accounts.json:/home/yolo/.config/opencode/antigravity-accounts.json:ro --mount ~/.config/opencode/opencode-yolo.json:/home/yolo/.config/opencode/opencode.json:ro --mount ~/.local/share/opencode/auth.json:/home/yolo/.local/share/opencode/auth.json:ro --mount ~/.config/opencode/plugins:/home/yolo/.config/opencode/plugins:ro --mount ~/.config/opencode/skills:/home/yolo/.config/opencode/skills:ro --mount ~/.claude/tasks:/home/yolo/.claude/tasks --mount ~/.config/opencode/tasks:/home/yolo/.config/opencode/tasks"
   ```
 
 - **Max Iterations**: Limit the number of tasks processed in a single loop (default: 10):
