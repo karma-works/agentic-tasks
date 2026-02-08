@@ -16858,9 +16858,23 @@ var TaskListSchema = external_exports.object({
 var DEFAULT_TASK_LIST_ID = "default";
 var ENV_TASK_LIST_ID = "CLAUDE_CODE_TASK_LIST_ID";
 var CLAUDE_BASE_DIR = path.join(os.homedir(), ".claude", "tasks");
+function getProjectName() {
+  let currentDir = process.cwd();
+  while (true) {
+    if (fs.existsSync(path.join(currentDir, "package.json")) || fs.existsSync(path.join(currentDir, ".git"))) {
+      return path.basename(currentDir);
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      break;
+    }
+    currentDir = parentDir;
+  }
+  return void 0;
+}
 var TaskStore = class {
   constructor(taskListId) {
-    this.taskListId = taskListId || process.env[ENV_TASK_LIST_ID] || DEFAULT_TASK_LIST_ID;
+    this.taskListId = taskListId || process.env[ENV_TASK_LIST_ID] || getProjectName() || path.basename(process.cwd()) || DEFAULT_TASK_LIST_ID;
     this.basePath = path.join(CLAUDE_BASE_DIR, this.taskListId);
     this.tasksFile = path.join(this.basePath, "tasks.json");
     this.backupFile = path.join(this.basePath, "tasks.json.bak");
@@ -17103,9 +17117,15 @@ async function main() {
         await manager.removeTask(removeId);
         console.log(`Task ${removeId} removed`);
         break;
+      case "start":
+        const startId = args[1];
+        if (!startId) throw new Error("Task ID required");
+        await manager.updateTask(startId, { status: "in_progress" });
+        console.log(`Task ${startId} started`);
+        break;
       default:
         console.log("Usage: cli.ts <command> [args...]");
-        console.log("Commands: list [status], add <desc> [prio] [tags] [deps], complete <id>, remove <id>");
+        console.log("Commands: list [status], add <desc> [prio] [tags] [deps], complete <id>, remove <id>, start <id>");
         process.exit(1);
     }
   } catch (error48) {

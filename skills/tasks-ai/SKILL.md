@@ -7,16 +7,46 @@ description: Comprehensive task management system compatible with Claude Code. U
 
 This skill provides a robust task management system that is file-compatible with Claude Code's task format.
 
-## When to Use
+## 3 Ways to Use Tasks AI
 
-Use this skill when:
-- The user has a complex, multi-step goal.
-- You need to track progress and state across multiple turns or sessions.
-- You want to ensure tasks are completed in the correct order (dependency management).
+1.  **Skill + Plugin (Full Integration - Recommended)**
+    -   **Best for**: Interactive sessions where you want the agent to stay focused.
+    -   **Advantages**:
+        -   **Auto-Context Injection**: The plugin automatically injects the current task context when files are edited.
+        -   **Native Tool Access**: The `manage_tasks` tool is available natively, ensuring reliable task updates.
+        -   **Real-time Updates**: The plugin monitors `tasks.json` changes and updates the agent immediately.
+
+2.  **Pure Skill (Manual Management)**
+    -   **Best for**: Environments without plugin support (e.g., GitHub Copilot CLI) or when you prefer manual control.
+    -   **Usage**: Manage tasks via CLI commands (`./scripts/tasks.sh`) or by asking the agent to run them.
+    -   **Scheduling**: You decide when to move to the next task.
+
+3.  **Real Ralph (Automated Loop)**
+    -   **Best for**: Autonomous execution of a list of tasks.
+    -   **Usage**: Define tasks, then run `./scripts/ralph.sh`.
+    -   **Mechanism**: The script loops through pending tasks, spawning a new agent instance for each one until all are complete.
+
+## Ralph Loop (Automated Execution)
+
+You can set up an automated "Ralph loop" to execute tasks sequentially using an AI agent.
+
+### Setup
+When the user asks to "setup ralph loop" or similar:
+1.  Run the setup script:
+    ```bash
+    ./skills/tasks-ai/scripts/setup_ralph.sh .
+    ```
+    *(Adjust path to where the skill is installed, e.g., `~/.opencode/skills/tasks-ai/scripts/setup_ralph.sh`)*
+
+2.  This will create `scripts/ralph.sh` and `scripts/tasks/` in the project.
+
+### Usage
+Run the loop:
+```bash
+./scripts/ralph.sh [--model MODEL_NAME] [--max-iterations N]
+```
 
 ## Tools & Commands
-
-While this skill primarily operates via the OpenCode plugin hooks, you can also interact with it manually using the provided scripts or CLI if needed.
 
 ### Task List Location
 Tasks are stored in `~/.claude/tasks/{id}/tasks.json`.
@@ -27,30 +57,17 @@ Tasks are stored in `~/.claude/tasks/{id}/tasks.json`.
 - **Auto-Recovery**: Automatically backups and restores `tasks.json` if corruption is detected.
 - **Dependency Management**: Prevents starting tasks if dependencies are not met.
 - **Strict Validation**: Ensures strict adherence to the Claude Code task schema.
-- **Auto-Hook**: Monitors file edits and reminds the agent of active tasks (Requires Plugin).
 
-## Installation
+### Standalone CLI Usage
+If you don't have the plugin, you can manage tasks using the bundled CLI script:
 
-To use this skill's plugin in OpenCode:
+```bash
+# List Tasks
+./scripts/tasks/tasks.sh list
 
-1.  Copy the `assets/tasks_ai_plugin.js` file to your OpenCode plugins directory:
-    ```bash
-    cp assets/tasks_ai_plugin.js ~/.config/opencode/plugin/tasks_ai.js
-    ```
-2.  Restart OpenCode.
-3.  The tool `manage_tasks` will be available, and the agent will receive automatic updates when editing files.
+# Add Task
+./scripts/tasks/tasks.sh add "Implement feature X" high "feature,important"
 
-## Standalone Usage (Without Plugin)
-
-If the `manage_tasks` tool is not available (e.g., you are using the skill without installing the plugin), you can manage tasks manually using the bundled CLI script.
-
-**Important**: This method does **not** provide automatic reminders or file monitoring. You must manually invoke the script to update task status.
-
-### Usage
-Run the script `scripts/tasks.sh` using the `bash` tool.
-
-**Examples:**
--   **List Tasks**: `./scripts/tasks.sh list`
--   **Add Task**: `./scripts/tasks.sh add "Implement feature X" high "feature,important"`
--   **Complete Task**: `./scripts/tasks.sh complete <TASK_UUID>`
--   **Remove Task**: `./scripts/tasks.sh remove <TASK_UUID>`
+# Complete Task
+./scripts/tasks/tasks.sh complete <TASK_UUID>
+```

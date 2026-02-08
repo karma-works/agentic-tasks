@@ -18,6 +18,25 @@
 -   Node.js (v18 or higher)
 -   npm
 
+## 3 Ways to Use Tasks AI
+
+1.  **Skill + Plugin (Full Integration - Recommended)**
+    -   **Best for**: Interactive sessions where you want the agent to stay focused.
+    -   **Advantages**:
+        -   **Auto-Context Injection**: The plugin automatically injects the current task context when files are edited.
+        -   **Native Tool Access**: The `manage_tasks` tool is available natively, ensuring reliable task updates.
+        -   **Real-time Updates**: The plugin monitors `tasks.json` changes and updates the agent immediately.
+
+2.  **Pure Skill (Manual Management)**
+    -   **Best for**: Environments without plugin support (e.g., GitHub Copilot CLI) or when you prefer manual control.
+    -   **Usage**: Manage tasks via CLI commands (`./scripts/tasks.sh`) or by asking the agent to run them.
+    -   **Scheduling**: You decide when to move to the next task.
+
+3.  **Real Ralph (Automated Loop)**
+    -   **Best for**: Autonomous execution of a list of tasks.
+    -   **Usage**: Define tasks, then run `./scripts/ralph.sh`.
+    -   **Mechanism**: The script loops through pending tasks, spawning a new agent instance for each one until all are complete.
+
 ## Installation & Build
 
 1.  **Clone the repository**:
@@ -67,6 +86,23 @@ If you cannot or do not wish to install the plugin, you can use the skill in sta
     ```
 
 2.  When interacting with the agent, ask it to "use the tasks-ai skill". The agent will read the instructions in `SKILL.md` and use the bundled `scripts/tasks.sh` to manage tasks.
+
+### Setting up the Ralph Loop
+
+For autonomous execution (Mode 3), you can set up the Ralph loop in any project:
+
+1.  Run the setup script provided by the skill:
+    ```bash
+    # From your project root
+    ~/.opencode/skills/tasks-ai/scripts/setup_ralph.sh .
+    ```
+
+2.  This creates `scripts/ralph.sh` and `scripts/tasks/` in your project.
+
+3.  Run the loop:
+    ```bash
+    ./scripts/ralph.sh --model <model_name>
+    ```
 
 ### Manual CLI Usage
 

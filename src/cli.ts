@@ -38,9 +38,16 @@ async function main() {
           console.log(`Task ${removeId} removed`);
           break;
 
+      case 'start':
+          const startId = args[1];
+          if (!startId) throw new Error('Task ID required');
+          await manager.updateTask(startId, { status: 'in_progress' });
+          console.log(`Task ${startId} started`);
+          break;
+
       default:
         console.log('Usage: cli.ts <command> [args...]');
-        console.log('Commands: list [status], add <desc> [prio] [tags] [deps], complete <id>, remove <id>');
+        console.log('Commands: list [status], add <desc> [prio] [tags] [deps], complete <id>, remove <id>, start <id>');
         process.exit(1);
     }
   } catch (error) {
