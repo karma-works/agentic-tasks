@@ -1,9 +1,9 @@
 {
-  "name": "opencode-plugin-tasks-ai",
+  "name": "opencode-plugin-agentic-tasks",
   "version": "0.1.0",
   "description": "OpenCode plugin for managing tasks within the editor",
   "type": "module",
-  "main": "src/tasks_ai.ts",
+  "main": "src/agentic_tasks.ts",
   "scripts": {
     "install": "bash install.sh",
     "test": "bun test",

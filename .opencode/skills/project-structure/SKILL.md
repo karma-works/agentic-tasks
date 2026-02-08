@@ -1,11 +1,11 @@
 ---
 name: project-structure
-description: Information about the tasks-ai project structure, plugin architecture, and deployment patterns. Use this when working on the tasks-ai codebase or when deploying it to other projects.
+description: Information about the agentic-tasks project structure, plugin architecture, and deployment patterns. Use this when working on the agentic-tasks codebase or when deploying it to other projects.
 ---
 
 # Project Structure Skill
 
-This skill documents the findings regarding the `tasks-ai` project structure and deployment patterns.
+This skill documents the findings regarding the `agentic-tasks` project structure and deployment patterns.
 
 ## Project Findings
 
@@ -19,6 +19,6 @@ For detailed architectural information, see [architecture.md](references/archite
 
 ## Common Tasks
 
-- **Updating the Plugin**: Modify `src/tasks_ai.ts` and run `install.sh`.
-- **Updating the CLI**: Modify `skills/tasks-ai/scripts/cli.ts` or `manager.ts`, re-bundle with `esbuild`, and run `install.sh`.
-- **Deploying to a Project**: Run `install.sh` then `~/.config/opencode/skills/tasks-ai/scripts/setup_ralph.sh <project_path>`.
+- **Updating the Plugin**: Modify `src/agentic_tasks.ts` and run `install.sh`.
+- **Updating the CLI**: Modify `skills/agentic-tasks/scripts/cli.ts` or `manager.ts`, re-bundle with `esbuild`, and run `install.sh`.
+- **Deploying to a Project**: Run `install.sh` then `~/.config/opencode/skills/agentic-tasks/scripts/setup_ralph.sh <project_path>`.

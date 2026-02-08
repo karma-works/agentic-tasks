@@ -23,7 +23,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// skills/tasks-ai/scripts/manager.ts
+// skills/agentic-tasks/scripts/agentic_tasks.ts
+var import_plugin = require("@opencode-ai/plugin");
 var fs = __toESM(require("node:fs"), 1);
 var path = __toESM(require("node:path"), 1);
 var os = __toESM(require("node:os"), 1);
@@ -4073,8 +4074,8 @@ var z = /* @__PURE__ */ Object.freeze({
   ZodError
 });
 
-// skills/tasks-ai/scripts/manager.ts
-var PLUGIN_NAME = "tasks-ai";
+// skills/agentic-tasks/scripts/agentic_tasks.ts
+var PLUGIN_NAME = "agentic-tasks";
 var TASK_LIST_ID = process.env.OPENCODE_TASK_LIST_ID || "default";
 var BASE_DIR = path.join(os.homedir(), ".config", "opencode", "tasks", TASK_LIST_ID);
 var TASKS_FILE = path.join(BASE_DIR, "tasks.json");
@@ -4225,7 +4226,7 @@ var TaskManager = class {
   }
 };
 
-// skills/tasks-ai/scripts/cli.ts
+// skills/agentic-tasks/scripts/cli.ts
 var manager = new TaskManager();
 var args = process.argv.slice(2);
 var command = args[0];

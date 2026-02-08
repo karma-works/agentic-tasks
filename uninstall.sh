@@ -3,7 +3,7 @@ set -e
 
 # Define destination paths
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
-SKILL_DEST_DIR="$OPENCODE_CONFIG_DIR/skills/tasks-ai"
+SKILL_DEST_DIR="$OPENCODE_CONFIG_DIR/skills/agentic-tasks"
 PLUGIN_DEST_DIR="$OPENCODE_CONFIG_DIR/plugins"
 
 # Remove skill files
@@ -16,10 +16,8 @@ fi
 
 # Remove plugin files
 echo "Removing plugin files from $PLUGIN_DEST_DIR..."
-rm -f "$PLUGIN_DEST_DIR/tasks_ai.ts"
-rm -f "$PLUGIN_DEST_DIR/tasks_ai.js"
-rm -f "$PLUGIN_DEST_DIR/tasks-ai.js"
-rm -f "$PLUGIN_DEST_DIR/tasks_ai_plugin.js"
+rm -f "$PLUGIN_DEST_DIR/agentic_tasks.ts"
+rm -f "$PLUGIN_DEST_DIR/agentic_tasks.js"
 
 # Remove plugin directory if empty
 if [ -d "$PLUGIN_DEST_DIR" ] && [ -z "$(ls -A "$PLUGIN_DEST_DIR")" ]; then

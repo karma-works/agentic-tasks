@@ -1,13 +1,13 @@
 ---
-name: tasks-ai
+name: agentic-tasks
 description: Comprehensive task management system compatible with Claude Code. Use this skill to track progress, manage dependencies, and ensure state is preserved across sessions.
 ---
 
-# Tasks AI
+# Agentic Tasks
 
 This skill provides a robust task management system that is file-compatible with Claude Code's task format.
 
-## 3 Ways to Use Tasks AI
+## 3 Ways to Use Agentic Tasks
 
 1.  **Skill + Plugin (Full Integration - Recommended)**
     -   **Best for**: Interactive sessions where you want the agent to stay focused.
@@ -34,9 +34,9 @@ You can set up an automated "Ralph loop" to execute tasks sequentially using an 
 When the user asks to "setup ralph loop" or similar:
 1.  Run the setup script:
     ```bash
-    ./skills/tasks-ai/scripts/setup_ralph.sh .
+    ./skills/agentic-tasks/scripts/setup_ralph.sh .
     ```
-    *(Adjust path to where the skill is installed, e.g., `~/.opencode/skills/tasks-ai/scripts/setup_ralph.sh`)*
+    *(Adjust path to where the skill is installed, e.g., `~/.opencode/skills/agentic-tasks/scripts/setup_ralph.sh`)*
 
 2.  This will create `scripts/ralph.sh` and `scripts/tasks/` in the project.
 
@@ -48,7 +48,7 @@ Run the loop:
 
 #### Ralph Configuration
 - **Custom Model**: `--model MODEL_NAME`
-- **Custom Agent**: Set `TASKS_AI_AGENT` env var or use `--agent AGENT_NAME` (defaults to `opencode`).
+- **Custom Agent**: Set `AGENTIC_TASKS_AGENT` env var or use `--agent AGENT_NAME` (defaults to `opencode`).
 - **Iteration Limit**: `--max-iterations N` (default: 10)
 - **Dry Run**: `--dry-run` to see commands without executing.
 

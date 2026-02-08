@@ -1,5 +1,5 @@
 #!/bin/bash
-# Setup script for Tasks AI Ralph Loop
+# Setup script for Agentic Tasks Ralph Loop
 # Usage: ./setup_ralph.sh [project_root]
 
 set -e
@@ -13,7 +13,7 @@ if [ ! -d "$PROJECT_ROOT" ]; then
     exit 1
 fi
 
-echo "Setting up Tasks AI Ralph Loop in '$PROJECT_ROOT'..."
+echo "Setting up Agentic Tasks Ralph Loop in '$PROJECT_ROOT'..."
 
 # 1. Setup Task Scripts
 TASKS_DIR="$PROJECT_ROOT/scripts/tasks"
@@ -33,7 +33,7 @@ node "$DIR/tasks-cli.cjs" "$@"
 EOF
 elif [ -f "$SKILL_SCRIPT_DIR/cli.ts" ]; then
     cp "$SKILL_SCRIPT_DIR/cli.ts" "$TASKS_DIR/"
-    cp "$SKILL_SCRIPT_DIR/tasks_ai.ts" "$TASKS_DIR/"
+    cp "$SKILL_SCRIPT_DIR/agentic_tasks.ts" "$TASKS_DIR/"
     [ -f "$SKILL_SCRIPT_DIR/manager.ts" ] && cp "$SKILL_SCRIPT_DIR/manager.ts" "$TASKS_DIR/"
     
     # Create a local tasks.sh that uses ts-node

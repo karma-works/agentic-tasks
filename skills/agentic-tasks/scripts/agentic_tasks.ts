@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 
 // --- Configuration ---
-const PLUGIN_NAME = 'tasks-ai';
+const PLUGIN_NAME = 'agentic-tasks';
 const TASK_LIST_ID = process.env.OPENCODE_TASK_LIST_ID || 'default';
 const BASE_DIR = path.join(os.homedir(), '.config', 'opencode', 'tasks', TASK_LIST_ID);
 const TASKS_FILE = path.join(BASE_DIR, 'tasks.json');

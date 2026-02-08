@@ -1,48 +1,44 @@
-# Tasks AI
+# Agentic Tasks
 
-**Tasks AI** is a robust task management system designed to bring **Claude Code**'s task features to **OpenCode**. It ensures 100% file format compatibility with Claude Code's task system, allowing you to maintain state and context across different agent sessions.
+**Agentic Tasks** is a high-performance, persistent task management system designed for AI agents. It brings advanced dependency modeling and autonomous execution loops to any environment, while maintaining 100% file format compatibility with **Claude Code**.
 
-## Features
+## Main Strengths
 
--   **Cross-Compatible**: Reads and writes `~/.claude/tasks/{id}/tasks.json`, fully compatible with Claude Code.
+-   **Deep Dependency Modeling**: Unlike simple todo lists, Agentic Tasks supports complex task graphs. Tasks can be `blocked` by others, ensuring agents follow a logical execution order.
+-   **Parallel-Ready**: The system identifies which tasks are unblocked and ready for work, enabling multiple agents or parallel processes to operate on the same project without conflict.
+-   **Persistent State**: Task state is stored in a standardized JSON format (`tasks.json`), allowing you to pause a session in one agent (e.g., Claude Code) and resume it in another (e.g., OpenCode or a custom CLI agent).
+-   **Autonomous Execution (Ralph Loop)**: Includes a built-in "Ralph Loop" that can automatically iterate through pending tasks, spawning agents until the entire task list is completed.
 -   **Safety First**:
     -   **Strict Validation**: Uses [Zod](https://zod.dev/) to enforce schema compliance.
     -   **Auto-Recovery**: Automatically creates backups (`tasks.json.bak`) and restores from them if corruption is detected.
-    -   **Concurrency**: Uses file locking to prevent race conditions between agents or processes.
--   **Dual Mode**:
-    1.  **Plugin Mode** (Recommended): Exposes a `manage_tasks` tool and auto-monitors file edits.
-    2.  **Skill Mode** (Standalone): Allows manual task management via bundled CLI scripts without installing the plugin.
+    -   **Concurrency**: Uses file locking to prevent race conditions.
 
-## Prerequisites
+## Compatibility & Usage
 
--   Node.js (v18 or higher)
--   npm
+Agentic Tasks is designed to be universal:
+-   **Claude Code**: Fully compatible with Claude Code's task system (`~/.claude/tasks/`).
+-   **OpenCode Plugin**: Injects task context directly into the agent's environment and provides a native `manage_tasks` tool.
+-   **Universal Skill**: Can be loaded as a "skill" in any agent system that supports markdown-based tool definitions.
+-   **Standalone CLI**: Manage tasks from any terminal using bundled Bash or PowerShell scripts.
 
-## 3 Ways to Use Tasks AI
+## Comparison: Agentic Tasks vs. OpenCode Internal Todo System
 
-1.  **Skill + Plugin (Full Integration - Recommended)**
-    -   **Best for**: Interactive sessions where you want the agent to stay focused.
-    -   **Advantages**:
-        -   **Auto-Context Injection**: The plugin automatically injects the current task context when files are edited.
-        -   **Native Tool Access**: The `manage_tasks` tool is available natively, ensuring reliable task updates.
-        -   **Real-time Updates**: The plugin monitors `tasks.json` changes and updates the agent immediately.
+| Feature | OpenCode Internal System | Agentic Tasks |
+| :--- | :--- | :--- |
+| **Persistence** | Session-based / Simple List | Persistent JSON (Cross-agent) |
+| **Dependencies** | Linear / No dependencies | **Blocked/Dependent Tasks** |
+| **Parallelism** | Single-threaded focus | **Multi-task Parallel Processing** |
+| **Compatibility** | OpenCode Only | **Claude Code Compatible** |
+| **Automation** | Manual | **Autonomous Ralph Loop** |
 
-2.  **Pure Skill (Manual Management)**
-    -   **Best for**: Environments without plugin support (e.g., GitHub Copilot CLI) or when you prefer manual control.
-    -   **Usage**: Manage tasks via CLI commands (`./scripts/tasks.sh`) or by asking the agent to run them.
-    -   **Scheduling**: You decide when to move to the next task.
-
-3.  **Real Ralph (Automated Loop)**
-    -   **Best for**: Autonomous execution of a list of tasks.
-    -   **Usage**: Define tasks, then run `./scripts/ralph.sh`.
-    -   **Mechanism**: The script loops through pending tasks, spawning a new agent instance for each one until all are complete.
+While OpenCode's built-in system is great for quick notes, **Agentic Tasks** is designed for complex engineering projects where tasks have strict order requirements and benefit from automated, multi-step execution.
 
 ## Installation & Build
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/your-username/tasks-ai.git
-    cd tasks-ai
+    git clone https://github.com/karma-works/agentic-tasks.git
+    cd agentic-tasks
     ```
 
 2.  **Install dependencies**:
@@ -51,146 +47,35 @@
     ```
 
 3.  **Build the project**:
-    This compiles the TypeScript source into bundled JavaScript files (`dist/tasks_ai.js`, `dist/cli.js`, and `skills/tasks-ai/scripts/cli.js`).
     ```bash
     npm run build
-    cp dist/cli.js skills/tasks-ai/scripts/cli.js
     ```
 
-## Usage Option 1: Full Plugin Installation (Recommended)
-
-### 1. Installing NPM Plugins (Easiest)
-
-If the plugin is hosted on npm (e.g., `tasks-ai`), follow these steps:
-
-1.  Open your configuration file:
-    -   **Project-level**: `opencode.json` (in your project root).
-    -   **Global**: `~/.config/opencode/opencode.json`.
-
-2.  Add the plugin name to the "plugins" array:
-    ```json
-    {
-      "plugins": [
-        "tasks-ai"
-      ]
-    }
-    ```
-
-3.  **Restart OpenCode**: At startup, OpenCode uses Bun to automatically install and cache these plugins.
-
-### 2. Installing Local or Custom Plugins
-
-If you are building from source or have a local `.ts` or `.js` file, you can place it in specific directories where OpenCode scans for them.
-
-#### Directory Locations
-
-OpenCode looks for files in these folders:
--   **Project-specific**: `.opencode/plugins/`
--   **Global**: `~/.config/opencode/plugins/`
-
-#### Steps to Install
-
-Copy the built plugin file into that folder:
-    ```bash
-    # From the tasks-ai repository root
-    cp dist/tasks_ai.js .opencode/plugins/tasks_ai.js
-    ```
-
-### 3. Verifying Installation
-
-Once you launch OpenCode, you can verify if your plugins loaded correctly by looking at the startup logs or checking the terminal UI. Many plugins will print a "Plugin loaded!" message to the console.
-
-> [!TIP]
-> **Load Order**: OpenCode loads plugins in a specific order:
-> 1. Global Config → 2. Project Config → 3. Global Plugins Dir → 4. Project Plugins Dir.
-> Later plugins can override or hook into the behavior of earlier ones.
-
-## Usage Option 2: Skill-Only Installation (Limited Functionality)
-
-If you cannot or do not wish to install the plugin, you can use the skill in standalone mode. This provides manual task management via CLI scripts but lacks automatic reminders.
-
-1.  Copy the entire `skills/tasks-ai` directory to your OpenCode skills folder:
-    ```bash
-    mkdir -p ~/.opencode/skills
-    cp -r skills/tasks-ai ~/.opencode/skills/
-    ```
-
-2.  When interacting with the agent, ask it to "use the tasks-ai skill". The agent will read the instructions in `SKILL.md` and use the bundled `scripts/tasks.sh` to manage tasks.
-
-### Setting up the Ralph Loop
-
-For autonomous execution (Mode 3), you can set up the Ralph loop in any project:
-
-1.  Run the setup script provided by the skill:
-    ```bash
-    # From your project root
-    ~/.opencode/skills/tasks-ai/scripts/setup_ralph.sh .
-    ```
-
-2.  This creates `scripts/ralph.sh` and `scripts/tasks/` in your project.
-
-3.  Run the loop:
-    ```bash
-    ./scripts/ralph.sh --model google/antigravity-gemini-3-flash
-    ```
-
-#### Ralph Configuration
-
--   **Custom Model**: Specify which model the agent should use:
-    ```bash
-    ./scripts/ralph.sh --model google/antigravity-gemini-3-flash
-    ```
--   **Custom Agent**: Change the underlying AI agent command (defaults to `opencode`). This can be set via environment variable or CLI flag:
-    ```bash
-    export TASKS_AI_AGENT="custom-agent"
-    ./scripts/ralph.sh
-    # OR
-    ./scripts/ralph.sh --agent custom-agent
-    ```
--   **Max Iterations**: Limit the number of tasks processed in a single loop (default: 10):
-    ```bash
-    ./scripts/ralph.sh --max-iterations 5
-    ```
--   **Dry Run**: See what commands would be executed without actually running the agent:
-    ```bash
-    ./scripts/ralph.sh --dry-run
-    ```
-
-### Manual CLI Usage
-
-You can manage tasks directly from the command line using the provided wrapper scripts in `bin/`. These do **not** require the OpenCode plugin to be running.
-
-**Bash (Linux/macOS)**:
+4. **Install Plugin and Skill in OpenCode**
 ```bash
-./bin/tasks.sh list
-./bin/tasks.sh add "Fix critical bug" high "bug,urgent"
-./bin/tasks.sh complete <TASK_UUID>
+install.sh
 ```
 
-**PowerShell (Windows)**:
-```powershell
-./bin/tasks.ps1 list
-./bin/tasks.ps1 add "Fix critical bug" high "bug,urgent"
+## 3 Ways to Use Agentic Tasks
+
+### 1. Skill + Plugin (Full Integration - Recommended)
+The plugin automatically injects the current task context when files are edited and provides the `manage_tasks` tool natively.
+
+### 2. Pure Skill (Manual Management)
+Use the skill in environments without plugin support. Manage tasks via CLI commands or by asking the agent to run the provided scripts.
+
+### 3. Ralph Loop (Automated Execution)
+Define a list of tasks, then run the Ralph script to have an agent execute them one-by-one automatically:
+```bash
+./scripts/ralph.sh --model google/antigravity-gemini-3-flash
 ```
-
-### Supported Commands
-
--   `list [status]`: List all tasks (optionally filter by status: pending, in_progress, completed, blocked).
--   `add <description> [priority] [tags] [deps]`: Create a new task.
-    -   Priority: low, medium, high.
-    -   Tags: comma-separated string.
-    -   Deps: comma-separated string of Task IDs.
--   `complete <id>`: Mark a task as completed (unblocks dependent tasks).
--   `remove <id>`: Remove a task (fails if other tasks depend on it).
 
 ## Architecture
 
--   **`src/schema.ts`**: Zod definitions for the Task JSON format.
--   **`src/store.ts`**: Handles file I/O, locking, and the backup/restore logic.
--   **`src/task-manager.ts`**: Core business logic (dependency validation, status updates).
--   **`.opencode/plugin/tasks_ai.ts`**: The OpenCode plugin definition.
--   **`skills/tasks-ai/`**: The standalone skill package containing bundled CLI scripts.
+-   **`src/agentic_tasks.ts`**: Unified plugin and manager logic.
+-   **`skills/agentic-tasks/`**: The standalone skill package containing bundled CLI scripts and instructions.
+-   **`bin/`**: Global CLI wrappers for manual task management.
 
 ## License
 
-ISC
+MIT

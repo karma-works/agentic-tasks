@@ -6,12 +6,12 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$SCRIPT_DIR"
 
 # Define source paths
-SOURCE_FILE="$PROJECT_ROOT/src/tasks_ai.ts"
-SKILL_SOURCE_DIR="$PROJECT_ROOT/skills/tasks-ai"
+SOURCE_FILE="$PROJECT_ROOT/src/agentic_tasks.ts"
+SKILL_SOURCE_DIR="$PROJECT_ROOT/skills/agentic-tasks"
 
 # Define destination paths
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
-SKILL_DEST_DIR="$OPENCODE_CONFIG_DIR/skills/tasks-ai"
+SKILL_DEST_DIR="$OPENCODE_CONFIG_DIR/skills/agentic-tasks"
 PLUGIN_DEST_DIR="$OPENCODE_CONFIG_DIR/plugins"
 
 # Check if source exists
@@ -35,7 +35,7 @@ cp "$SKILL_SOURCE_DIR/SKILL.md" "$SKILL_DEST_DIR/" 2>/dev/null || true
 
 # Copy plugin file
 echo "Updating plugin in $PLUGIN_DEST_DIR..."
-cp "$SOURCE_FILE" "$PLUGIN_DEST_DIR/tasks_ai.ts"
+cp "$SOURCE_FILE" "$PLUGIN_DEST_DIR/agentic_tasks.ts"
 # Remove manager.ts from plugin dir if it exists to avoid loading errors
 rm -f "$PLUGIN_DEST_DIR/manager.ts"
 
