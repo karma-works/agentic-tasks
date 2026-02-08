@@ -76,10 +76,6 @@ Define a list of tasks, then run the Ralph script to have an agent execute them 
 -   **`skills/agentic-tasks/`**: The standalone skill package containing bundled CLI scripts and instructions.
 -   **`bin/`**: Global CLI wrappers for manual task management.
 
-## License
-
-MIT
-
 ---
 
 ## Configuration
@@ -151,3 +147,7 @@ You can manage tasks directly from the command line using the provided wrapper s
 - `complete <id>`: Mark a task as completed (unblocks dependent tasks).
 - `update <id> [description] [status] [priority]`: Update task fields.
 - `remove <id>`: Remove a task (fails if other tasks depend on it).
+
+## License
+
+MIT
