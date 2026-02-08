@@ -1,10 +1,10 @@
 import type { Plugin } from "@opencode-ai/plugin";
 import { tool } from "@opencode-ai/plugin";
-import * as fs from 'fs-extra';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import * as crypto from 'node:crypto';
 import { z } from 'zod';
-import { v4 as uuidv4 } from 'uuid';
 
 // --- Configuration ---
 const PLUGIN_NAME = 'tasks-ai';
@@ -40,8 +40,10 @@ type TaskStatus = z.infer<typeof TaskStatusSchema>;
 
 // --- Store Logic ---
 class TaskStore {
-  constructor() {
-    fs.ensureDirSync(BASE_DIR);
+  private ensureBaseDir(): void {
+    if (!fs.existsSync(BASE_DIR)) {
+      fs.mkdirSync(BASE_DIR, { recursive: true });
+    }
   }
 
   private getTimestamp(): string {
@@ -74,6 +76,7 @@ class TaskStore {
         const content = fs.readFileSync(BACKUP_FILE, 'utf-8');
         const json = JSON.parse(content);
         if (TaskListSchema.safeParse(json).success) {
+          this.ensureBaseDir();
           fs.copyFileSync(BACKUP_FILE, TASKS_FILE);
           console.log(`[${PLUGIN_NAME}] Recovered from backup.`);
           return json;
@@ -85,6 +88,7 @@ class TaskStore {
 
   saveTasks(data: TaskList): void {
     data.last_updated = this.getTimestamp();
+    this.ensureBaseDir();
     
     // Backup existing
     if (fs.existsSync(TASKS_FILE)) {
@@ -95,7 +99,7 @@ class TaskStore {
       }
     }
     
-    fs.writeJsonSync(TASKS_FILE, data, { spaces: 2 });
+    fs.writeFileSync(TASKS_FILE, JSON.stringify(data, null, 2), 'utf-8');
   }
 }
 
@@ -111,7 +115,7 @@ class TaskManager {
   add(description: string, priority: 'low'|'medium'|'high' = 'medium', tags: string[] = [], deps: string[] = []): string {
     const data = this.store.readTasks();
     const newTask: Task = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       description,
       status: deps.length > 0 ? 'blocked' : 'pending',
       created_at: new Date().toISOString(),
