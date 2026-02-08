@@ -6,7 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$SCRIPT_DIR"
 
 # Define source paths
-PLUGIN_SOURCE_DIR="$PROJECT_ROOT/plugin"
+SOURCE_FILE="$PROJECT_ROOT/src/tasks_ai.ts"
 SKILL_SOURCE_DIR="$PROJECT_ROOT/skills/tasks-ai"
 
 # Define destination paths
@@ -15,13 +15,8 @@ SKILL_DEST_DIR="$OPENCODE_CONFIG_DIR/skills/tasks-ai"
 PLUGIN_DEST_DIR="$OPENCODE_CONFIG_DIR/plugins"
 
 # Check if source exists
-if [ ! -d "$SKILL_SOURCE_DIR" ]; then
-    echo "Error: Skill source directory not found at $SKILL_SOURCE_DIR"
-    exit 1
-fi
-
-if [ ! -f "$PLUGIN_SOURCE_DIR/tasks_ai.ts" ]; then
-    echo "Error: Plugin source file not found at $PLUGIN_SOURCE_DIR/tasks_ai.ts"
+if [ ! -f "$SOURCE_FILE" ]; then
+    echo "Error: Source file not found at $SOURCE_FILE"
     exit 1
 fi
 
@@ -30,22 +25,16 @@ echo "Creating destination directories..."
 mkdir -p "$SKILL_DEST_DIR"
 mkdir -p "$PLUGIN_DEST_DIR"
 
-# Clean up existing JS artifacts in destination
-echo "Cleaning up existing JS artifacts in destination..."
-rm -f "$PLUGIN_DEST_DIR/tasks_ai.js"
-rm -f "$PLUGIN_DEST_DIR/tasks-ai.js"
-rm -f "$PLUGIN_DEST_DIR/tasks_ai_plugin.js"
-
 # Copy skill files
-echo "Copying skill files to $SKILL_DEST_DIR..."
-# Remove existing destination to ensure clean install
-rm -rf "$SKILL_DEST_DIR"
-mkdir -p "$SKILL_DEST_DIR"
-cp -R "$SKILL_SOURCE_DIR/"* "$SKILL_DEST_DIR/"
+echo "Updating skill files in $SKILL_DEST_DIR..."
+# Update the script within the skill
+mkdir -p "$SKILL_DEST_DIR/scripts"
+cp "$SOURCE_FILE" "$SKILL_DEST_DIR/scripts/tasks_ai.ts"
+# Copy other skill assets (SKILL.md, etc.)
+cp "$SKILL_SOURCE_DIR/SKILL.md" "$SKILL_DEST_DIR/" 2>/dev/null || true
 
-# Copy plugin files (TS version)
-echo "Copying plugin to $PLUGIN_DEST_DIR..."
-cp "$PLUGIN_SOURCE_DIR/tasks_ai.ts" "$PLUGIN_DEST_DIR/"
-# Note: cli.ts is NOT a plugin and should not be in the plugins folder
+# Copy plugin file
+echo "Updating plugin in $PLUGIN_DEST_DIR..."
+cp "$SOURCE_FILE" "$PLUGIN_DEST_DIR/tasks_ai.ts"
 
 echo "Installation successful!"

@@ -1,33 +1,41 @@
 {
-  "name": "tasks-ai",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/tasks_ai.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "name": "opencode-plugin-tasks-ai",
+  "version": "0.1.0",
+  "description": "OpenCode plugin for managing tasks within the editor",
+  "type": "module",
+  "main": "src/tasks_ai.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node build.js"
+    "install": "bash install.sh",
+    "test": "bun test",
+    "typecheck": "bun tsc --noEmit",
+    "lint": "bunx biome check .",
+    "lint:fix": "bunx biome check --write .",
+    "format": "bunx biome format --write ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "tasks",
+    "ai-agents"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
   "dependencies": {
-    "fs-extra": "^11.3.3",
-    "proper-lockfile": "^4.1.2",
-    "uuid": "^11.0.5",
+    "@opencode-ai/plugin": "^1.1.25",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.1.53",
-    "@types/fs-extra": "^11.0.4",
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
     "@types/node": "^25.2.1",
-    "@types/proper-lockfile": "^4.1.4",
-    "@types/uuid": "^10.0.0",
-    "esbuild": "^0.27.3",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "opencode": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "opencode": {
+      "optional": true
+    }
   }
 }
