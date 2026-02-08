@@ -27,14 +27,15 @@ mkdir -p "$PLUGIN_DEST_DIR"
 
 # Copy skill files
 echo "Updating skill files in $SKILL_DEST_DIR..."
-# Update the script within the skill
+# Update the scripts within the skill
 mkdir -p "$SKILL_DEST_DIR/scripts"
-cp "$SOURCE_FILE" "$SKILL_DEST_DIR/scripts/tasks_ai.ts"
+cp "$SKILL_SOURCE_DIR/scripts/"* "$SKILL_DEST_DIR/scripts/"
 # Copy other skill assets (SKILL.md, etc.)
 cp "$SKILL_SOURCE_DIR/SKILL.md" "$SKILL_DEST_DIR/" 2>/dev/null || true
 
 # Copy plugin file
 echo "Updating plugin in $PLUGIN_DEST_DIR..."
 cp "$SOURCE_FILE" "$PLUGIN_DEST_DIR/tasks_ai.ts"
+cp "$PROJECT_ROOT/src/manager.ts" "$PLUGIN_DEST_DIR/manager.ts"
 
 echo "Installation successful!"

@@ -43,7 +43,7 @@ When the user asks to "setup ralph loop" or similar:
 ### Usage
 Run the loop:
 ```bash
-./scripts/ralph.sh [--model MODEL_NAME] [--max-iterations N]
+./scripts/ralph.sh [--model MODEL_NAME] [--max-iterations N] [--dry-run]
 ```
 
 ## Tools & Commands

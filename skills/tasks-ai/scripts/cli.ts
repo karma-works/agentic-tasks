@@ -1,5 +1,5 @@
 #!/usr/bin/env npx ts-node
-import { TaskManager } from './tasks_ai';
+import { TaskManager } from './manager.ts';
 
 const manager = new TaskManager();
 const args = process.argv.slice(2);
